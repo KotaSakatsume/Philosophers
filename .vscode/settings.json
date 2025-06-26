@@ -1,0 +1,6 @@
+{
+	"files.associations": {
+		"panel.h": "c",
+		"philo.h": "c"
+	}
+}
