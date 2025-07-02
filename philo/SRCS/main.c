@@ -6,7 +6,7 @@
 /*   By: kosakats <kosakats@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 19:24:26 by kosakats          #+#    #+#             */
-/*   Updated: 2025/06/22 11:42:36 by kosakats         ###   ########.fr       */
+/*   Updated: 2025/07/02 19:36:52 by kosakats         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,16 +51,18 @@ int	main(int ac, char **av)
 	if (!data)
 		return (1);
 	philo = init_philosophers(data);
+	init_start_time(data);
+	printf("dat->star_time: %ld\n", data->start_time);
 	if (!philo)
 	{
 		free(data->forks);
 		free(data);
 		return (1);
 	}
-	print_data(data);
-	print_philosopher(philo, data->philosopher_count);
+	// print_data(data);
+	// print_philosopher(philo, data->philosopher_count);
 	// シミュレーションを実行する（未実装部分）
-	// start_simulation(data, philo);
+	start_simulation(data, philo);
 	// リソース解放
 	while (i < data->philosopher_count)
 	{

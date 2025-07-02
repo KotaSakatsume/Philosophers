@@ -6,7 +6,7 @@
 /*   By: kosakats <kosakats@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 19:24:26 by kosakats          #+#    #+#             */
-/*   Updated: 2025/06/22 15:40:54 by kosakats         ###   ########.fr       */
+/*   Updated: 2025/07/02 19:30:45 by kosakats         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 # include <pthread.h>
 # include <stdio.h>
 # include <stdlib.h>
+# include <sys/time.h>
+# include <unistd.h>
 
 typedef struct s_philosopher
 {
@@ -35,6 +37,7 @@ typedef struct s_data
 	int				meals_required;
 	pthread_mutex_t	*forks;
 	pthread_mutex_t	log_mutex;
+	pthread_mutex_t	stop_mutex;
 	int				stop_flag;
 	long			start_time;
 }					t_data;
@@ -42,6 +45,7 @@ typedef struct s_data
 // init.c
 t_data				*init_data(int ac, char **av);
 t_philosopher		*init_philosophers(t_data *data);
+void				init_start_time(t_data *data);
 
 // philosopher.c
 void				start_simulation(t_data *data, t_philosopher *philo);

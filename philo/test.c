@@ -33,24 +33,43 @@
 // 	return (0);
 // }
 
+#include <pthread.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/time.h>
+#include <unistd.h>
+
+#define THREAD_NUM 5
+
+pthread_mutex_t	print_mutex;
+
+void	*routine(void *arg)
+{
+	int	id;
+
+	id = *(int *)arg;
+	// pthread_mutex_lock(&print_mutex); // コメントアウト
+	for (int i = 0; i < 5; i++)
+	{
+		printf("Thread %d is saying hello: line %d\n", id, i);
+		usleep(10); // 少しだけ遅延
+	}
+	// pthread_mutex_unlock(&print_mutex); // コメントアウト
+	return (NULL);
+}
 
 int	main(void)
 {
-	struct timeval	time1;
-	struct timeval	time2;
-	float			diff_time;
+	pthread_t	threads[THREAD_NUM];
+	int			ids[THREAD_NUM];
+	int			i;
 
-	gettimeofday(&time1, NULL);
-	printf("sec: %d, usec: %d\n", (int)time1.tv_sec, (int)time1.tv_usec);
-	/** Describe Function for Measurement of time **/
-	gettimeofday(&time2, NULL);
-	printf("sec: %d, usec: %d\n", (int)time2.tv_sec, (int)time2.tv_usec);
-	diff_time = time2.tv_sec - time1.tv_sec + (float)(time2.tv_usec
-			- time1.tv_usec) / 1000000;
-	printf("diff: %f[s]\n", diff_time);
+	pthread_mutex_init(&print_mutex, NULL);
+	for (i = 0; i < THREAD_NUM; i++)
+	{
+		ids[i] = i + 1;
+		pthread_create(&threads[i], NULL, routine, &ids[i]);
+	}
+	for (i = 0; i < THREAD_NUM; i++)
+		pthread_join(threads[i], NULL);
+	pthread_mutex_destroy(&print_mutex);
 	return (0);
 }

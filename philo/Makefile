@@ -6,7 +6,7 @@
 #    By: kosakats <kosakats@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/05/15 19:24:26 by kosakats          #+#    #+#              #
-#    Updated: 2025/06/22 11:42:51 by kosakats         ###   ########.fr        #
+#    Updated: 2025/07/02 19:29:14 by kosakats         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,8 +15,8 @@
 NAME = philo
 CC = cc
 CFLAGS = -Wall -Wextra -Werror
-SRC_DIR = ./src
-OBJ_DIR = ./obj
+SRC_DIR = ./SRCS
+OBJ_DIR = ./OBJS
 INCLUDE_DIR = ./include
 INCLUDES = -I $(INCLUDE_DIR)
 LDFLAGS = -lpthread
@@ -24,7 +24,7 @@ LDFLAGS = -lpthread
 # Source files
 SRCS = $(SRC_DIR)/main.c \
        $(SRC_DIR)/init.c \
-       #$(SRC_DIR)/philosopher.c
+       $(SRC_DIR)/philosopher.c
 
 OBJS = $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
