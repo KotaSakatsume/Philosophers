@@ -6,7 +6,7 @@
 /*   By: kosakats <kosakats@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 19:24:26 by kosakats          #+#    #+#             */
-/*   Updated: 2025/07/02 19:41:36 by kosakats         ###   ########.fr       */
+/*   Updated: 2025/07/04 11:20:26 by kosakats         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ void	log_action(t_philosopher *philo, const char *action)
 	timestamp = 0;
 	timestamp = get_timestamp(philo->data);
 	pthread_mutex_lock(&philo->data->log_mutex);
-	printf("%ld %d %s\n", timestamp, philo->id, action);
+	printf("%03ld %d %s\n", timestamp, philo->id, action);
 	pthread_mutex_unlock(&philo->data->log_mutex);
 }
 
@@ -91,17 +91,33 @@ void	*monitor_philosophers(void *arg)
 
 void	take_forks(t_philosopher *philo)
 {
-	int	left_fork;
-	int	right_fork;
+	int	left;
+	int	right;
 
-	left_fork = philo->id - 1;
-	right_fork = philo->id % philo->data->philosopher_count;
-	// 左のフォークを取る
-	pthread_mutex_lock(&philo->data->forks[left_fork]);
-	log_action(philo, "has taken a fork");
-	// 右のフォークを取る
-	pthread_mutex_lock(&philo->data->forks[right_fork]);
-	log_action(philo, "has taken a fork");
+	left = philo->id - 1;
+	right = philo->id % philo->data->philosopher_count;
+	if (philo->id % 2 == 0)
+	{
+		pthread_mutex_lock(&philo->data->forks[right]);
+		if (is_simulation_stopped(philo->data))
+			return ;
+		log_action(philo, "has taken a fork");
+		pthread_mutex_lock(&philo->data->forks[left]);
+		if (is_simulation_stopped(philo->data))
+			return ;
+		log_action(philo, "has taken a fork");
+	}
+	else
+	{
+		pthread_mutex_lock(&philo->data->forks[left]);
+		if (is_simulation_stopped(philo->data))
+			return ;
+		log_action(philo, "has taken a fork");
+		pthread_mutex_lock(&philo->data->forks[right]);
+		if (is_simulation_stopped(philo->data))
+			return ;
+		log_action(philo, "has taken a fork");
+	}
 }
 
 void	eat(t_philosopher *philo)
@@ -109,6 +125,8 @@ void	eat(t_philosopher *philo)
 	int	left_fork;
 	int	right_fork;
 
+	if (is_simulation_stopped(philo->data))
+		return ;
 	left_fork = philo->id - 1;
 	right_fork = philo->id % philo->data->philosopher_count;
 	log_action(philo, "is eating");
@@ -121,12 +139,16 @@ void	eat(t_philosopher *philo)
 
 void	ft_sleep(t_philosopher *philo)
 {
+	if (is_simulation_stopped(philo->data))
+		return ;
 	log_action(philo, "is sleeping");
 	usleep(philo->data->time_to_sleep * 1000);
 }
 
 void	think(t_philosopher *philo)
 {
+	if (is_simulation_stopped(philo->data))
+		return ;
 	log_action(philo, "is thinking");
 }
 
@@ -138,8 +160,14 @@ void	*philosopher_routine(void *arg)
 	while (!is_simulation_stopped(philo->data))
 	{
 		take_forks(philo);
+		if (is_simulation_stopped(philo->data))
+			break ;
 		eat(philo);
+		if (is_simulation_stopped(philo->data))
+			break ;
 		ft_sleep(philo);
+		if (is_simulation_stopped(philo->data))
+			break ;
 		think(philo);
 	}
 	return (NULL);
