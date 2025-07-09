@@ -6,7 +6,7 @@
 /*   By: kosakats <kosakats@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 19:24:26 by kosakats          #+#    #+#             */
-/*   Updated: 2025/07/04 10:53:28 by kosakats         ###   ########.fr       */
+/*   Updated: 2025/07/09 17:42:27 by kosakats         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,26 +50,32 @@ int	main(int ac, char **av)
 	data = init_data(ac, av);
 	if (!data)
 		return (1);
+	init_start_time(data); // start前に初期化する
 	philo = init_philosophers(data);
-	printf("dat->star_time: %ld\n", data->start_time);
 	if (!philo)
 	{
 		free(data->forks);
 		free(data);
 		return (1);
 	}
-	// print_data(data);
-	// print_philosopher(philo, data->philosopher_count);
-	// シミュレーションを実行する（未実装部分）
-	init_start_time(data);
-	start_simulation(data, philo);
-	// リソース解放
+	if (start_simulation(data, philo) != 0)
+	{
+		// スレッド生成に失敗した場合も解放
+		free(data->forks);
+		free(philo);
+		free(data);
+		return (1);
+	}
+	// 全スレッド終了後にリソース解放
+	i = 0;
 	while (i < data->philosopher_count)
 	{
+		pthread_mutex_destroy(&philo[i].meal_mutex); // 追加: 各哲学者のmutex破棄
 		pthread_mutex_destroy(&data->forks[i]);
 		i++;
 	}
 	pthread_mutex_destroy(&data->log_mutex);
+	pthread_mutex_destroy(&data->stop_mutex);
 	free(data->forks);
 	free(philo);
 	free(data);

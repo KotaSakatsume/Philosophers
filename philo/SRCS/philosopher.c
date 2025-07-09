@@ -6,7 +6,7 @@
 /*   By: kosakats <kosakats@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 19:24:26 by kosakats          #+#    #+#             */
-/*   Updated: 2025/07/04 11:20:26 by kosakats         ###   ########.fr       */
+/*   Updated: 2025/07/09 13:36:23 by kosakats         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,16 +66,22 @@ void	*monitor_philosophers(void *arg)
 		all_eat_count = 0;
 		while (i < data->philosopher_count)
 		{
+			pthread_mutex_lock(&philo[i].meal_mutex);
 			elapsed = get_timestamp(data) - philo[i].last_meal_time;
+			pthread_mutex_unlock(&philo[i].meal_mutex);
 			if (elapsed > data->time_to_die)
 			{
 				log_action(&philo[i], "died");
 				stop_simulation(data);
 				return (NULL);
 			}
-			if (data->meals_required > 0
-				&& philo[i].meal_count >= data->meals_required)
-				all_eat_count++;
+			if (data->meals_required > 0)
+			{
+				pthread_mutex_lock(&philo[i].meal_mutex);
+				if (philo[i].meal_count >= data->meals_required)
+					all_eat_count++;
+				pthread_mutex_unlock(&philo[i].meal_mutex);
+			}
 			i++;
 		}
 		if (data->meals_required > 0
@@ -100,22 +106,36 @@ void	take_forks(t_philosopher *philo)
 	{
 		pthread_mutex_lock(&philo->data->forks[right]);
 		if (is_simulation_stopped(philo->data))
+		{
+			pthread_mutex_unlock(&philo->data->forks[right]);
 			return ;
+		}
 		log_action(philo, "has taken a fork");
 		pthread_mutex_lock(&philo->data->forks[left]);
 		if (is_simulation_stopped(philo->data))
+		{
+			pthread_mutex_unlock(&philo->data->forks[left]);
+			pthread_mutex_unlock(&philo->data->forks[right]);
 			return ;
+		}
 		log_action(philo, "has taken a fork");
 	}
 	else
 	{
 		pthread_mutex_lock(&philo->data->forks[left]);
 		if (is_simulation_stopped(philo->data))
+		{
+			pthread_mutex_unlock(&philo->data->forks[left]);
 			return ;
+		}
 		log_action(philo, "has taken a fork");
 		pthread_mutex_lock(&philo->data->forks[right]);
 		if (is_simulation_stopped(philo->data))
+		{
+			pthread_mutex_unlock(&philo->data->forks[right]);
+			pthread_mutex_unlock(&philo->data->forks[left]);
 			return ;
+		}
 		log_action(philo, "has taken a fork");
 	}
 }
@@ -130,8 +150,10 @@ void	eat(t_philosopher *philo)
 	left_fork = philo->id - 1;
 	right_fork = philo->id % philo->data->philosopher_count;
 	log_action(philo, "is eating");
+	pthread_mutex_lock(&philo->meal_mutex);
 	philo->last_meal_time = get_timestamp(philo->data);
 	philo->meal_count++;
+	pthread_mutex_unlock(&philo->meal_mutex);
 	usleep(philo->data->time_to_eat * 1000);
 	pthread_mutex_unlock(&philo->data->forks[left_fork]);
 	pthread_mutex_unlock(&philo->data->forks[right_fork]);
@@ -157,6 +179,8 @@ void	*philosopher_routine(void *arg)
 	t_philosopher	*philo;
 
 	philo = (t_philosopher *)arg;
+	while (get_timestamp(philo->data) < 1)
+		usleep(100);
 	while (!is_simulation_stopped(philo->data))
 	{
 		take_forks(philo);
@@ -173,25 +197,51 @@ void	*philosopher_routine(void *arg)
 	return (NULL);
 }
 
-void	start_simulation(t_data *data, t_philosopher *philo)
+int	start_simulation(t_data *data, t_philosopher *philo)
 {
-	int			i;
-	pthread_t	monitor_thread;
+	int				i;
+	int				created_count;
+	pthread_t		monitor_thread;
+	struct timeval	now;
 
 	i = 0;
+	created_count = 0;
+	gettimeofday(&now, NULL);
+	data->start_time = now.tv_sec * 1000 + now.tv_usec / 1000;
+	// last_meal_time を start_time に設定しておく
 	while (i < data->philosopher_count)
 	{
-		if (pthread_create(&philo[i].thread, NULL, philosopher_routine,
-				&philo[i]) != 0)
-		{
-			printf("Error creating thread\n");
-			stop_simulation(data);
-		}
+		// philo[i].last_meal_time = 0;
+		pthread_mutex_lock(&philo[i].meal_mutex);
+		philo[i].last_meal_time = 0;
+		pthread_mutex_unlock(&philo[i].meal_mutex);
 		i++;
 	}
-	pthread_create(&monitor_thread, NULL, monitor_philosophers, philo);
+	// 哲学者スレッドの生成
+	while (created_count < data->philosopher_count)
+	{
+		if (pthread_create(&philo[created_count].thread, NULL,
+				philosopher_routine, &philo[created_count]) != 0)
+		{
+			printf("Error: failed to create philosopher thread\n");
+			stop_simulation(data);
+			break ;
+		}
+		created_count++;
+	}
+	// モニタスレッドの生成
+	if (pthread_create(&monitor_thread, NULL, monitor_philosophers, philo) != 0)
+	{
+		printf("Error: failed to create monitor thread\n");
+		stop_simulation(data);
+	}
+	// スレッドの終了待機
 	i = 0;
-	while (i < data->philosopher_count)
-		pthread_join(philo[i++].thread, NULL);
+	while (i < created_count)
+	{
+		pthread_join(philo[i].thread, NULL);
+		i++;
+	}
 	pthread_join(monitor_thread, NULL);
+	return (0);
 }

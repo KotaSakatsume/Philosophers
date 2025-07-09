@@ -6,7 +6,7 @@
 /*   By: kosakats <kosakats@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 19:24:26 by kosakats          #+#    #+#             */
-/*   Updated: 2025/07/02 19:36:13 by kosakats         ###   ########.fr       */
+/*   Updated: 2025/07/06 12:20:17 by kosakats         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,7 @@ t_philosopher	*init_philosophers(t_data *data)
 		philo[i].last_meal_time = data->start_time;
 		philo[i].meal_count = 0;
 		philo[i].data = data; // 共有データへのポインタを設定
+		pthread_mutex_init(&philo[i].meal_mutex, NULL);
 		i++;
 	}
 	return (philo);

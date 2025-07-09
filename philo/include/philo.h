@@ -6,7 +6,7 @@
 /*   By: kosakats <kosakats@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 19:24:26 by kosakats          #+#    #+#             */
-/*   Updated: 2025/07/02 19:30:45 by kosakats         ###   ########.fr       */
+/*   Updated: 2025/07/06 12:19:43 by kosakats         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ typedef struct s_philosopher
 	long			last_meal_time;
 	int				meal_count;
 	struct s_data *data; // 共有データへのポインタ
+	pthread_mutex_t	meal_mutex;
 }					t_philosopher;
 
 typedef struct s_data
@@ -48,6 +49,6 @@ t_philosopher		*init_philosophers(t_data *data);
 void				init_start_time(t_data *data);
 
 // philosopher.c
-void				start_simulation(t_data *data, t_philosopher *philo);
+int					start_simulation(t_data *data, t_philosopher *philo);
 
 #endif
