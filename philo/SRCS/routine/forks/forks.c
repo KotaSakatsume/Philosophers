@@ -6,7 +6,7 @@
 /*   By: kosakats <kosakats@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 19:24:26 by kosakats          #+#    #+#             */
-/*   Updated: 2025/07/11 18:52:25 by kosakats         ###   ########.fr       */
+/*   Updated: 2025/07/11 21:28:53 by kosakats         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,5 +69,8 @@ void	take_forks(t_philosopher *philo)
 	if (philo->id % 2 == 0)
 		take_forks_even(philo, left, right);
 	else
+	{
+		usleep(100);
 		take_forks_odd(philo, left, right);
+	}
 }
