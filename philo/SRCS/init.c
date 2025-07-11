@@ -6,7 +6,7 @@
 /*   By: kosakats <kosakats@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/15 19:24:26 by kosakats          #+#    #+#             */
-/*   Updated: 2025/07/11 18:35:58 by kosakats         ###   ########.fr       */
+/*   Updated: 2025/07/11 21:35:07 by kosakats         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ t_data	*init_data(int ac, char **av)
 		return (free(data), NULL);
 	while (i < data->philosopher_count)
 		pthread_mutex_init(&data->forks[i++], NULL);
+	pthread_mutex_init(&data->log_mutex, NULL);
 	pthread_mutex_init(&data->stop_mutex, NULL);
 	data->stop_flag = 0;
 	data->start_time = 0;
