@@ -6,11 +6,9 @@
 #    By: kosakats <kosakats@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/05/15 19:24:26 by kosakats          #+#    #+#              #
-#    Updated: 2025/07/11 19:15:10 by kosakats         ###   ########.fr        #
+#    Updated: 2025/07/16 10:42:45 by kosakats         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
-
-# Makefile for philo project
 
 NAME = philo
 CC = cc
@@ -21,12 +19,11 @@ INCLUDE_DIR = ./include
 INCLUDES = -I $(INCLUDE_DIR)
 LDFLAGS = -lpthread
 
-# Source files
 SRCS = $(SRC_DIR)/main.c \
-       $(SRC_DIR)/init.c \
-       $(SRC_DIR)/philosopher.c \
-       $(SRC_DIR)/ft_atoi.c \
-       $(SRC_DIR)/monitor.c \
+       $(SRC_DIR)/init/init.c \
+       $(SRC_DIR)/thread/philosopher.c \
+       $(SRC_DIR)/utils/ft_atoi.c \
+       $(SRC_DIR)/thread/monitor.c \
        $(SRC_DIR)/routine/routine.c \
        $(SRC_DIR)/routine/eat/eat.c \
        $(SRC_DIR)/routine/forks/forks.c \
